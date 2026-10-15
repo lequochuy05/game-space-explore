@@ -3,6 +3,10 @@ using UnityEngine;
 // Điều khiển ngôi sao: rơi xuống, xoay nhẹ, cộng điểm khi Player chạm vào
 public class Star : MonoBehaviour
 {
+    [Header("Hiệu ứng khi nhặt")]
+    [SerializeField] private GameObject collectEffectPrefab;
+    [SerializeField] private AudioClip collectSound;
+    [SerializeField, Range(0f, 1f)] private float collectVolume = 0.6f;
     [Header("Tốc độ rơi (chọn ngẫu nhiên trong khoảng)")]
     [SerializeField] private float minFallSpeed = 1.5f;
     [SerializeField] private float maxFallSpeed = 3f;
@@ -57,6 +61,17 @@ public class Star : MonoBehaviour
             if (scoreManager != null)
             {
                 scoreManager.AddScore(scoreValue);
+            }
+
+            // Hiệu ứng và âm thanh khi nhặt sao
+            if (collectEffectPrefab != null)
+            {
+                Instantiate(collectEffectPrefab, transform.position, Quaternion.identity);
+            }
+
+            if (collectSound != null)
+            {
+                AudioSource.PlayClipAtPoint(collectSound, Camera.main.transform.position, collectVolume);
             }
 
             Destroy(gameObject);

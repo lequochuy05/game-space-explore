@@ -3,6 +3,10 @@ using UnityEngine;
 // Điều khiển thiên thạch: rơi xuống, xoay, tự hủy khi ra khỏi màn hình
 public class Asteroid : MonoBehaviour
 {
+    [Header("Hiệu ứng khi bị phá")]
+    [SerializeField] private GameObject explosionPrefab;
+    [SerializeField] private AudioClip explosionSound;
+    [SerializeField, Range(0f, 1f)] private float explosionVolume = 0.6f;
     [Header("Tốc độ rơi (chọn ngẫu nhiên trong khoảng)")]
     [SerializeField] private float minFallSpeed = 2f;
     [SerializeField] private float maxFallSpeed = 5f;
@@ -22,17 +26,36 @@ public class Asteroid : MonoBehaviour
     private float spinSpeed;
     private float bottomLimit;
     private bool isHit = false;
-    private void Start()
+    private bool isWaveAsteroid = false;
+    private float waveScale = 1f;
+        private void Start()
     {
-        // Chọn ngẫu nhiên tốc độ rơi và tốc độ xoay
-        fallSpeed = Random.Range(minFallSpeed, maxFallSpeed);
+        // Tốc độ xoay và góc xoay ban đầu vẫn ngẫu nhiên cho mọi asteroid
         spinSpeed = Random.Range(minSpinSpeed, maxSpinSpeed);
-
-        // Góc xoay ban đầu ngẫu nhiên (0 đến 360 độ quanh trục Z)
         transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
 
-        // Kích thước ngẫu nhiên
-        float scale = Random.Range(minScale, maxScale);
+        float scale;
+
+        if (isWaveAsteroid)
+        {
+            // Asteroid của đợt sóng: dùng giá trị Spawner đã đặt
+            scale = waveScale;
+        }
+        else
+        {
+            // Asteroid thường: chọn ngẫu nhiên tốc độ rơi và kích thước
+            fallSpeed = Random.Range(minFallSpeed, maxFallSpeed);
+
+            // Level càng cao asteroid càng rơi nhanh
+            LevelManager levelManager = FindFirstObjectByType<LevelManager>();
+            if (levelManager != null)
+            {
+                fallSpeed *= levelManager.DifficultyMultiplier;
+            }
+
+            scale = Random.Range(minScale, maxScale);
+        }
+
         transform.localScale = new Vector3(scale, scale, 1f);
 
         // Tính mép dưới của màn hình (trừ thêm margin)
@@ -65,7 +88,29 @@ public class Asteroid : MonoBehaviour
         }
 
         isHit = true;
+        PlayDestroyEffects();
         Destroy(gameObject);
         return true;
+    }
+        // Tạo hiệu ứng nổ và phát tiếng nổ tại vị trí asteroid
+    private void PlayDestroyEffects()
+    {
+        if (explosionPrefab != null)
+        {
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+        }
+
+        if (explosionSound != null)
+        {
+            // PlayClipAtPoint tạo một AudioSource tạm, phát xong tự xóa,
+            // nên vẫn nghe được tiếng dù asteroid đã bị Destroy
+            AudioSource.PlayClipAtPoint(explosionSound, Camera.main.transform.position, explosionVolume);
+        }
+    }
+    public void SetupForWave(float speed, float scale)
+    {
+        isWaveAsteroid = true;
+        fallSpeed = speed;
+        waveScale = scale;
     }
 }

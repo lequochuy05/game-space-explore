@@ -1,6 +1,7 @@
 using UnityEngine;
 
-// Xử lý việc bắn đạn của Player (hỗ trợ tự động bắn)
+// Xử lý việc bắn đạn của Player (hỗ trợ tự động bắn và âm thanh)
+[RequireComponent(typeof(AudioSource))]
 public class PlayerShooting : MonoBehaviour
 {
     // Prefab viên đạn (kéo từ Project vào Inspector)
@@ -15,8 +16,19 @@ public class PlayerShooting : MonoBehaviour
     // Bật = tự động bắn, Tắt = phải giữ SPACE để bắn
     [SerializeField] private bool autoFire = true;
 
+    [Header("Âm thanh")]
+    [SerializeField] private AudioClip shootSound;
+    [SerializeField, Range(0f, 1f)] private float shootVolume = 0.3f;
+
+    private AudioSource audioSource;
+
     // Thời điểm sớm nhất được bắn viên tiếp theo
     private float nextFireTime;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     private void Update()
     {
@@ -43,9 +55,15 @@ public class PlayerShooting : MonoBehaviour
     {
         // Tạo một bản sao của bulletPrefab tại FirePoint
         Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+
+        // Phát tiếng bắn (nếu đã gán file âm thanh)
+        if (shootSound != null)
+        {
+            audioSource.PlayOneShot(shootSound, shootVolume);
+        }
     }
 
-    // Hàm dành cho Level System (làm sau): tăng tốc độ bắn theo level
+    // Hàm dành cho Level System (làm sau): đổi tốc độ bắn theo level
     public void SetFireRate(float newFireRate)
     {
         fireRate = newFireRate;

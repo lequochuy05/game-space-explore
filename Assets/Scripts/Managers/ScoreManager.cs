@@ -1,16 +1,19 @@
 using TMPro;
 using UnityEngine;
 
-// Quản lý điểm số và cập nhật chữ hiển thị trên UI
+// Quản lý điểm số, cập nhật chữ hiển thị và báo cho LevelManager khi điểm đổi
 public class ScoreManager : MonoBehaviour
 {
     // Kéo object ScoreText (TextMeshPro) vào ô này trong Inspector
     [SerializeField] private TextMeshProUGUI scoreText;
 
+    // Kéo object LevelManager vào ô này trong Inspector
+    [SerializeField] private LevelManager levelManager;
+
     // Điểm hiện tại, ban đầu bằng 0
     private int score = 0;
 
-    // Cho script khác ĐỌC điểm nhưng không tự ý sửa (Phase 9 sẽ dùng)
+    // Cho script khác ĐỌC điểm nhưng không tự ý sửa
     public int Score => score;
 
     private void Start()
@@ -23,6 +26,12 @@ public class ScoreManager : MonoBehaviour
     {
         score += amount;
         UpdateScoreText();
+
+        // Báo cho LevelManager kiểm tra xem đã đủ điểm lên level chưa
+        if (levelManager != null)
+        {
+            levelManager.CheckLevelUp(score);
+        }
     }
 
     // Cập nhật chữ trên màn hình

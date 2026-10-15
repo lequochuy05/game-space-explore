@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // Điều khiển viên đạn: bay lên, tự hủy khi ra khỏi màn hình,
-// phá Asteroid và cộng điểm khi chạm vào
+// phá Asteroid và gây sát thương cho Drone
 public class Bullet : MonoBehaviour
 {
     // Tốc độ bay của đạn (unit / giây)
@@ -12,6 +12,9 @@ public class Bullet : MonoBehaviour
 
     // Điểm nhận được khi bắn nổ một asteroid
     [SerializeField] private int asteroidScore = 20;
+
+    // Sát thương gây ra cho Drone mỗi viên
+    [SerializeField] private int damage = 1;
 
     private float topLimit;
     private ScoreManager scoreManager;
@@ -64,7 +67,31 @@ public class Bullet : MonoBehaviour
                     scoreManager.AddScore(asteroidScore);
                 }
 
-                Destroy(gameObject); // Hủy viên đạn
+                Destroy(gameObject);
+            }
+        }
+        else if (other.CompareTag("Enemy"))
+        {
+            Drone drone = other.GetComponent<Drone>();
+            Boss boss = other.GetComponent<Boss>();
+
+            if (drone != null)
+            {
+                hasHit = true;
+
+                // Drone tự xử lý máu, điểm và hiệu ứng nổ
+                drone.TakeDamage(damage);
+
+                Destroy(gameObject);
+            }
+            else if (boss != null)
+            {
+                hasHit = true;
+
+                // Boss tự xử lý máu, đổi pha, điểm và hiệu ứng nổ
+                boss.TakeDamage(damage);
+
+                Destroy(gameObject);
             }
         }
     }
