@@ -14,7 +14,8 @@ public class PauseManager : MonoBehaviour
     [SerializeField] private string mainMenuSceneName = "MainMenu";
 
     private bool isPaused = false;
-
+    // Cho script khác biết game đang tạm dừng hay không
+    public bool IsPaused => isPaused;
     private void Start()
     {
         // Đảm bảo luôn bắt đầu ở trạng thái không pause
