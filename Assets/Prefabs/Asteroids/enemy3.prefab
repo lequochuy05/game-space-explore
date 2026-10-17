@@ -233,3 +233,7 @@ MonoBehaviour:
   explosionPrefab: {fileID: 1863079185344320863, guid: 9749621058efab744ba7acdf33f8e795, type: 3}
   explosionSound: {fileID: 8300000, guid: 6f36246123752fb839913d65ae9cc203, type: 3}
   explosionVolume: 0.6
+  powerUpPrefab: {fileID: 7042453554906681797, guid: e365ffdaf182dc7ed84caefe1e16d096, type: 3}
+  dropChance: 0.1
+  shieldPrefab: {fileID: 7042453554906681797, guid: 92f7fbe8e896eba6ba64e38c6dfc636e, type: 3}
+  shieldDropChance: 0.1

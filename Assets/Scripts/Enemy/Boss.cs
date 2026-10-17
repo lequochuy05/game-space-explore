@@ -41,6 +41,10 @@ public class Boss : MonoBehaviour
     [SerializeField] private AudioClip explosionSound;
     [SerializeField, Range(0f, 1f)] private float explosionVolume = 0.7f;
 
+    [Header("Phần thưởng khi bị hạ")]
+    // Kéo các Prefab quà vào đây (ví dụ PowerUp_Weapon, PowerUp_Life): tất cả đều rơi
+    [SerializeField] private GameObject[] guaranteedDrops;
+
     // Các giá trị do WaveManager cấp qua hàm Setup
     private int maxHealth = 1;
     private int health = 1;
@@ -380,7 +384,7 @@ public class Boss : MonoBehaviour
 
             yield return new WaitForSeconds(0.1f);
         }
-
+        DropRewards();
         // Vụ nổ lớn cuối cùng ở tâm
         SpawnExplosion(transform.position, 3f);
         yield return new WaitForSeconds(0.3f);
@@ -400,6 +404,27 @@ public class Boss : MonoBehaviour
         if (explosionSound != null)
         {
             AudioSource.PlayClipAtPoint(explosionSound, Camera.main.transform.position, explosionVolume);
+        }
+    }
+        // Thả các phần thưởng đảm bảo tại chỗ boss chết
+    private void DropRewards()
+    {
+        if (guaranteedDrops == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < guaranteedDrops.Length; i++)
+        {
+            if (guaranteedDrops[i] == null)
+            {
+                continue;
+            }
+
+            // Rải đều sang hai bên để quà không chồng lên nhau
+            float x = (i - (guaranteedDrops.Length - 1) / 2f) * 2f;
+
+            Instantiate(guaranteedDrops[i], transform.position + new Vector3(x, 0f, 0f), Quaternion.identity);
         }
     }
 }

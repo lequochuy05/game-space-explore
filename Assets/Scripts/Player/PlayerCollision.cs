@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-// Xử lý va chạm của Player: mất mạng, hồi sinh có thời gian bất tử, hoặc Game Over
+// Xử lý va chạm của Player: khiên đỡ đòn, mất mạng, hồi sinh có thời gian bất tử, hoặc Game Over
 public class PlayerCollision : MonoBehaviour
 {
     [Header("Tham chiếu")]
@@ -24,7 +24,6 @@ public class PlayerCollision : MonoBehaviour
     // Tùy chọn: kéo Main Camera vào để rung màn hình. Có thể để trống
     [SerializeField] private CameraShake cameraShake;
 
-    // Hai cờ trạng thái:
     // isDead: tàu đang "chết" (chờ hồi sinh hoặc hết mạng)
     // isInvulnerable: tàu đang bất tử sau khi hồi sinh
     private bool isDead = false;
@@ -34,6 +33,7 @@ public class PlayerCollision : MonoBehaviour
     private Rigidbody2D rb;
     private PlayerController playerController;
     private PlayerShooting playerShooting;
+    private PlayerShield playerShield;
     private Collider2D playerCollider;
     private SpriteRenderer spriteRenderer;
 
@@ -42,6 +42,7 @@ public class PlayerCollision : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         playerController = GetComponent<PlayerController>();
         playerShooting = GetComponent<PlayerShooting>();
+        playerShield = GetComponent<PlayerShield>();
         playerCollider = GetComponent<Collider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
@@ -49,8 +50,20 @@ public class PlayerCollision : MonoBehaviour
         startPosition = transform.position;
     }
 
-    // Unity tự gọi khi Collider của Player va chạm vật lý với Collider khác
+    // Unity gọi một lần lúc bắt đầu va chạm
     private void OnCollisionEnter2D(Collision2D collision)
+    {
+        HandleCollision(collision);
+    }
+
+    // Unity gọi mỗi bước vật lý khi hai vật vẫn còn chạm nhau.
+    // Cần thiết để tàu không thể "ngồi yên" trong Drone hay thiên thạch sau khi hết bất tử
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        HandleCollision(collision);
+    }
+
+    private void HandleCollision(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Asteroid") || collision.gameObject.CompareTag("Enemy"))
         {
@@ -63,6 +76,12 @@ public class PlayerCollision : MonoBehaviour
     {
         // Đang chết hoặc đang bất tử thì bỏ qua
         if (isDead || isInvulnerable)
+        {
+            return;
+        }
+
+        // Có khiên (hoặc vừa vỡ khiên) thì đòn bị chặn, tàu không mất mạng
+        if (playerShield != null && playerShield.TryAbsorbHit())
         {
             return;
         }
@@ -82,6 +101,9 @@ public class PlayerCollision : MonoBehaviour
             livesManager.LoseLife();
         }
 
+        // Mất mạng thì vũ khí cũng tụt một cấp
+        playerShooting.DowngradeWeapon();
+
         // Ẩn tàu, tắt điều khiển, bắn và va chạm
         SetShipActive(false);
 
@@ -93,7 +115,7 @@ public class PlayerCollision : MonoBehaviour
         }
         else
         {
-            // Hết mạng: Game Over như cũ
+            // Hết mạng: Game Over
             gameManager.GameOver();
         }
     }

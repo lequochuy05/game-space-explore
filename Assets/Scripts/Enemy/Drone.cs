@@ -19,6 +19,14 @@ public class Drone : MonoBehaviour
     [SerializeField] private AudioClip explosionSound;
     [SerializeField, Range(0f, 1f)] private float explosionVolume = 0.6f;
 
+    [Header("Rơi quà")]
+    // Kéo Prefab PowerUp_Weapon vào đây (để trống nếu không muốn rơi quà)
+    [SerializeField] private GameObject powerUpPrefab;
+    // Xác suất rơi quà khi bị hạ (0.1 = 10%)
+    [SerializeField, Range(0f, 1f)] private float dropChance = 0.1f;
+    // Quà khiên: hiếm hơn quà vũ khí
+    [SerializeField] private GameObject shieldPrefab;
+    [SerializeField, Range(0f, 1f)] private float shieldDropChance = 0.05f;
     private int health;
     private bool isDead = false;
     private SpriteRenderer spriteRenderer;
@@ -91,7 +99,17 @@ public class Drone : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(explosionSound, Camera.main.transform.position, explosionVolume);
         }
+        // Có một xác suất rơi quà tại chỗ Drone bị hạ
+        if (powerUpPrefab != null && Random.value < dropChance)
+        {
+            Instantiate(powerUpPrefab, transform.position, Quaternion.identity);
+        }
 
+                // Quà khiên rơi lệch sang bên một chút để không chồng lên quà vũ khí
+        if (shieldPrefab != null && Random.value < shieldDropChance)
+        {
+            Instantiate(shieldPrefab, transform.position + Vector3.right * 0.8f, Quaternion.identity);
+        }
         Destroy(gameObject);
     }
 

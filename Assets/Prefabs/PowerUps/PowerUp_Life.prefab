@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 3209365229205217409}
   - component: {fileID: 1900468550800367249}
   - component: {fileID: 1012882213188157993}
-  m_Layer: 0
+  - component: {fileID: 2201710088929633476}
+  m_Layer: 10
   m_Name: PowerUp_Life
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -156,3 +157,24 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: -0.011410192, y: 0}
   m_Radius: 0.4984053
+--- !u!114 &2201710088929633476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7042453554906681797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffbf16b9395d3baf0bd80ba64d30d339, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PowerUp
+  type: 1
+  fallSpeed: 2.5
+  pulseSpeed: 5
+  pulseAmount: 0.1
+  destroyMargin: 1
+  bonusScore: 50
+  collectEffectPrefab: {fileID: 1863079185344320863, guid: c4cfd69c4f21c78629e7a0d59dca832d, type: 3}
+  collectSound: {fileID: 8300000, guid: a2cf76d7713a5303cb347e7e0e346845, type: 3}
+  collectVolume: 0.6
