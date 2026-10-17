@@ -1,32 +1,51 @@
 using UnityEngine;
 
-// Điều khiển viên đạn: bay lên, tự hủy khi ra khỏi màn hình,
-// phá Asteroid và gây sát thương cho Drone
+// Điều khiển viên đạn: bay theo một hướng, tự hủy khi ra khỏi màn hình,
+// phá Asteroid và gây sát thương cho Drone, Boss
 public class Bullet : MonoBehaviour
 {
     // Tốc độ bay của đạn (unit / giây)
     [SerializeField] private float speed = 12f;
 
-    // Khoảng cách thêm phía trên màn hình trước khi hủy đạn
+    // Khoảng cách thêm ngoài mép màn hình trước khi hủy đạn
     [SerializeField] private float destroyMargin = 1f;
 
     // Điểm nhận được khi bắn nổ một asteroid
     [SerializeField] private int asteroidScore = 20;
 
-    // Sát thương gây ra cho Drone mỗi viên
+    // Sát thương gây ra cho Drone và Boss mỗi viên
     [SerializeField] private int damage = 1;
 
-    private float topLimit;
+    // Hướng bay, mặc định là thẳng lên
+    private Vector3 direction = Vector3.up;
+
+    // Vùng cho phép (ra ngoài là hủy)
+    private float minX, maxX, minY, maxY;
+
     private ScoreManager scoreManager;
 
     // Đạn đã trúng gì đó chưa (tránh một viên đạn xử lý hai lần)
     private bool hasHit = false;
 
+    // PlayerShooting gọi hàm này ngay sau khi tạo đạn để đặt hướng bay
+    public void SetDirection(Vector3 newDirection)
+    {
+        direction = newDirection.normalized;
+
+        // Xoay hình đạn theo hướng bay (hình gốc quay theo hướng lên)
+        transform.rotation = Quaternion.FromToRotation(Vector3.up, direction);
+    }
+
     private void Start()
     {
-        // Tính mép trên của màn hình (cộng thêm margin)
         Camera cam = Camera.main;
-        topLimit = cam.transform.position.y + cam.orthographicSize + destroyMargin;
+        float halfHeight = cam.orthographicSize;
+        float halfWidth = halfHeight * cam.aspect;
+
+        minX = cam.transform.position.x - halfWidth - destroyMargin;
+        maxX = cam.transform.position.x + halfWidth + destroyMargin;
+        minY = cam.transform.position.y - halfHeight - destroyMargin;
+        maxY = cam.transform.position.y + halfHeight + destroyMargin;
 
         // Tự tìm ScoreManager trong Scene một lần khi đạn xuất hiện
         scoreManager = FindFirstObjectByType<ScoreManager>();
@@ -34,11 +53,12 @@ public class Bullet : MonoBehaviour
 
     private void Update()
     {
-        // Di chuyển lên theo trục Y của thế giới
-        transform.Translate(Vector3.up * speed * Time.deltaTime, Space.World);
+        // Bay theo hướng đã đặt (hệ tọa độ thế giới)
+        transform.Translate(direction * speed * Time.deltaTime, Space.World);
 
-        // Nếu đạn bay quá mép trên thì hủy để tránh thừa object
-        if (transform.position.y > topLimit)
+        // Đạn chéo có thể thoát ra mép trái, phải nên kiểm tra cả bốn phía
+        Vector3 pos = transform.position;
+        if (pos.x < minX || pos.x > maxX || pos.y < minY || pos.y > maxY)
         {
             Destroy(gameObject);
         }
@@ -52,7 +72,10 @@ public class Bullet : MonoBehaviour
         {
             return;
         }
-
+        if (other.CompareTag("Untagged") || other.gameObject.layer == LayerMask.NameToLayer("PowerUp"))
+        {
+            return;
+        }
         if (other.CompareTag("Asteroid"))
         {
             Asteroid asteroid = other.GetComponent<Asteroid>();
@@ -78,19 +101,13 @@ public class Bullet : MonoBehaviour
             if (drone != null)
             {
                 hasHit = true;
-
-                // Drone tự xử lý máu, điểm và hiệu ứng nổ
                 drone.TakeDamage(damage);
-
                 Destroy(gameObject);
             }
             else if (boss != null)
             {
                 hasHit = true;
-
-                // Boss tự xử lý máu, đổi pha, điểm và hiệu ứng nổ
                 boss.TakeDamage(damage);
-
                 Destroy(gameObject);
             }
         }
